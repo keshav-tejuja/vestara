@@ -6,6 +6,7 @@ const healthRouter = require('./routes/health');
 const authRouter = require('./routes/auth');
 const portfolioRouter = require('./routes/portfolio');
 const { setupBullBoard } = require('./config/bullBoard'); // ADD
+const alertsRouter = require('./routes/alerts');
 
 const app = express();
 
@@ -22,7 +23,7 @@ app.use('/admin/queues', serverAdapter.getRouter()); // ADD
 app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/portfolio', portfolioRouter);
-
+app.use('/alerts', alertsRouter);
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });

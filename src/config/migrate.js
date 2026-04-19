@@ -1,22 +1,20 @@
 const { pool } = require('./db');
 
 const createTables = async () => {
-    try {
-        // Users table
-        await pool.query(`
+  try {
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         email VARCHAR(150) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
+        phone VARCHAR(20),
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-        console.log('✅ Users table created');
+    console.log('✅ Users table ready');
 
-        // Portfolios table
-        // One user can have one portfolio (we keep it simple for now)
-        await pool.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS portfolios (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -25,11 +23,9 @@ const createTables = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-        console.log('✅ Portfolios table created');
+    console.log('✅ Portfolios table ready');
 
-        // Holdings table
-        // Each holding = one stock row inside a portfolio
-        await pool.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS holdings (
         id SERIAL PRIMARY KEY,
         portfolio_id INTEGER REFERENCES portfolios(id) ON DELETE CASCADE,
@@ -40,14 +36,45 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-        console.log('✅ Holdings table created');
+    console.log('✅ Holdings table ready');
 
-        console.log('✅ All tables created successfully');
-        process.exit(0);
-    } catch (error) {
-        console.error('❌ Migration failed:', error.message);
-        process.exit(1);
-    }
+    // Alerts table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS alerts (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        symbol VARCHAR(20) NOT NULL,
+        alert_type VARCHAR(20) NOT NULL,
+        condition VARCHAR(10) NOT NULL,
+        target_price DECIMAL,
+        is_active BOOLEAN DEFAULT true,
+        triggered_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ Alerts table ready');
+
+    // Notifications table — log of all sent notifications
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        alert_id INTEGER REFERENCES alerts(id) ON DELETE SET NULL,
+        title VARCHAR(200) NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(20) NOT NULL,
+        channels VARCHAR(50),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ Notifications table ready');
+
+    console.log('✅ All tables ready');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Migration failed:', error.message);
+    process.exit(1);
+  }
 };
 
 createTables();
