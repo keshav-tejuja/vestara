@@ -68,6 +68,21 @@ const createTables = async () => {
       );
     `);
     console.log('✅ Notifications table ready');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ai_analysis (
+        id SERIAL PRIMARY KEY,
+        portfolio_id INTEGER REFERENCES portfolios(id) ON DELETE CASCADE,
+        risk_score INTEGER,
+        risk_level VARCHAR(20),
+        sector_exposure JSONB,
+        red_flags JSONB,
+        suggestions JSONB,
+        ai_reasoning TEXT,
+        raw_response JSONB,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ AI analysis table ready');
 
     console.log('✅ All tables ready');
     process.exit(0);

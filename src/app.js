@@ -6,6 +6,7 @@ const healthRouter = require('./routes/health');
 const authRouter = require('./routes/auth');
 const portfolioRouter = require('./routes/portfolio');
 const { setupBullBoard } = require('./config/bullBoard'); // ADD
+const analysisRouter = require('./routes/analysis'); // ADD
 const alertsRouter = require('./routes/alerts');
 
 const app = express();
@@ -19,7 +20,7 @@ app.use(express.json());
 // Bull Board UI — mount before other routes
 const serverAdapter = setupBullBoard(); // ADD
 app.use('/admin/queues', serverAdapter.getRouter()); // ADD
-
+app.use('/analysis', analysisRouter); // ADD
 app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/portfolio', portfolioRouter);
