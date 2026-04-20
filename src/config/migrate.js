@@ -83,6 +83,29 @@ const createTables = async () => {
       );
     `);
     console.log('✅ AI analysis table ready');
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS news_cache (
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(20) NOT NULL,
+    headline VARCHAR(500) NOT NULL,
+    description TEXT,
+    url VARCHAR(1000),
+    source VARCHAR(200),
+    sentiment VARCHAR(20),
+    sentiment_score DECIMAL,
+    ai_summary TEXT,
+    published_at TIMESTAMP,
+    fetched_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+    console.log('✅ News cache table ready');
+
+    // Index for fast symbol lookups
+    await pool.query(`
+  CREATE INDEX IF NOT EXISTS idx_news_symbol 
+  ON news_cache(symbol, fetched_at DESC);
+`);
+    console.log('✅ News index created');
 
     console.log('✅ All tables ready');
     process.exit(0);
