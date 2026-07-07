@@ -107,6 +107,44 @@ const createTables = async () => {
 `);
     console.log('✅ News index created');
 
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS price_history (
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(20) NOT NULL,
+    price DECIMAL NOT NULL,
+    volume BIGINT,
+    change_percent DECIMAL,
+    fetched_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+    console.log('✅ Price history table ready');
+
+    // Index for fast time-series queries
+    await pool.query(`
+  CREATE INDEX IF NOT EXISTS idx_price_history_symbol_time
+  ON price_history(symbol, fetched_at DESC);
+`);
+    console.log('✅ Price history index created');
+
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS portfolio_history (
+    id SERIAL PRIMARY KEY,
+    portfolio_id INTEGER REFERENCES portfolios(id) ON DELETE CASCADE,
+    total_invested DECIMAL NOT NULL,
+    total_value DECIMAL NOT NULL,
+    total_pnl DECIMAL NOT NULL,
+    pnl_percent DECIMAL NOT NULL,
+    recorded_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+    console.log('✅ Portfolio history table ready');
+
+    await pool.query(`
+  CREATE INDEX IF NOT EXISTS idx_portfolio_history_time
+  ON portfolio_history(portfolio_id, recorded_at DESC);
+`);
+    console.log('✅ Portfolio history index created');
+
     console.log('✅ All tables ready');
     process.exit(0);
   } catch (error) {

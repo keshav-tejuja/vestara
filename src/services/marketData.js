@@ -90,5 +90,27 @@ const isMarketOpen = () => {
     if (day === 0 || day === 6) return false;
     return timeInMinutes >= 555 && timeInMinutes <= 930;
 };
+const PriceHistory = require('../models/priceHistory');
 
-module.exports = { getStockPrice, getBulkPrices, isMarketOpen };
+// Store fetched prices into price_history table
+const storePriceHistory = async (prices) => {
+    try {
+        const priceDataArray = Object.values(prices)
+            .filter(p => p !== null)
+            .map(p => ({
+                symbol: p.symbol,
+                price: p.currentPrice,
+                volume: p.volume,
+                changePercent: p.changePercent
+            }));
+
+        if (priceDataArray.length > 0) {
+            await PriceHistory.storeBulk(priceDataArray);
+            console.log(`📈 Stored price history for ${priceDataArray.length} symbols`);
+        }
+    } catch (error) {
+        console.error('Failed to store price history:', error.message);
+    }
+};
+
+module.exports = { getStockPrice, getBulkPrices, isMarketOpen, storePriceHistory };
